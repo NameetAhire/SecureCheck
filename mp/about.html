@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SecureCheck - About Us</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root {
+  --primary-1: #667eea;
+  --primary-2: #764ba2;
+  --accent: #ff7e5f;
+}
+body { box-sizing: border-box; }
+
+/* Animations */
+@keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideInLeft { from{opacity:0;transform:translateX(-50px)} to{opacity:1;transform:translateX(0)} }
+@keyframes bounce { 0%,20%,53%,80%,100%{transform:translate3d(0,0,0)} 40%,43%{transform:translate3d(0,-30px,0)} 70%{transform:translate3d(0,-15px,0)} 90%{transform:translate3d(0,-4px,0)} }
+@keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+@keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+@keyframes shimmer { 0%{background-position: -200% 0} 100%{background-position: 200% 0} }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-10px)} }
+@keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.05)} }
+@keyframes drawLine { to{stroke-dashoffset:0} }
+
+.gradient-bg {
+  background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 12s ease infinite;
+}
+.glass-effect { backdrop-filter: blur(10px); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2); }
+.fade-in-up{animation:fadeInUp .6s ease-out}
+.slide-in-left{animation:slideInLeft .6s ease-out}
+.bounce-animation{animation:bounce 1s}
+.loading-spinner{border:3px solid #f3f3f3;border-top:3px solid #667eea;border-radius:50%;width:30px;height:30px;animation:spin 1s linear infinite}
+.float-animation{animation:float 6s ease-in-out infinite}
+.pulse-animation{animation:pulse 2s infinite}
+.shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,255,255,.25), rgba(255,255,255,.08));
+  background-size: 200% 100%;
+  animation: shimmer 2.2s linear infinite;
+}
+
+/* Ripple */
+.ripple { position:relative; overflow:hidden; transition: box-shadow .2s ease, transform .1s ease; }
+.ripple:hover { box-shadow:0 0 15px rgba(255,255,255,.25),0 8px 24px rgba(0,0,0,.15) }
+.ripple:active { transform: translateY(1px) scale(.99) }
+.ripple span { position:absolute; border-radius:50%; transform:scale(0); animation:ripple 600ms linear; background-color: rgba(255,255,255,.5) }
+@keyframes ripple { to{ transform: scale(4); opacity: 0 } }
+
+/* Header particles + plexus */
+header #headerParticles{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.35;z-index:0}
+#plexusCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.4}
+@media (prefers-reduced-motion: reduce){#plexusCanvas, #headerParticles{display:none}}
+
+/* Process Steps */
+.process-step { position:relative; }
+.process-step:not(:last-child):after {
+  content: '';
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  width: 2px;
+  height: 60px;
+  background: linear-gradient(to bottom, #667eea, #764ba2);
+  transform: translateX(-50%);
+}
+.process-step .step-icon {
+  position: relative;
+  z-index: 2;
+}
+
+/* Drawing animation for process diagram */
+.process-line {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: drawLine 2s ease-out forwards;
+}
+</style>
+</head>
+<body class="min-h-full bg-gray-50">
+<header class="gradient-bg text-white shadow-lg relative">
+  <canvas id="headerParticles"></canvas>
+  <div class="container mx-auto px-6 py-4 relative z-10">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+        </div>
+        <h1 class="text-2xl font-bold">SecureCheck</h1>
+      </div>
+      <nav id="primaryNav" class="hidden md:flex space-x-6">
+        <a href="/" class="hover:text-purple-200 transition-colors">Home</a>
+        <a href="about" class="hover:text-purple-200 transition-colors">About</a>
+        <a href="api" class="hover:text-purple-200 transition-colors">API</a>
+        <a href="contact" class="hover:text-purple-200 transition-colors">Contact</a>
+        <a href="visualisation" class="hover:text-purple-200 transition-colors">Visualisation</a>
+      </nav>
+      <button id="mobileMenuBtn" class="md:hidden ml-4 p-2 rounded-lg glass-effect border border-white/20 focus:outline-none hover:bg-white/10 transition-all ripple" aria-label="Toggle navigation">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div id="mobileNavContainer" class="md:hidden hidden mt-3 glass-effect rounded-lg overflow-hidden">
+      <div class="flex flex-col">
+        <a href="index.html" class="px-4 py-3 hover:bg-white/10 transition-colors">Home</a>
+        <a href="about.html" class="px-4 py-3 hover:bg-white/10 transition-colors">About</a>
+        <a href="api.html" class="px-4 py-3 hover:bg-white/10 transition-colors">API</a>
+        <a href="contact.html" class="px-4 py-3 hover:bg-white/10 transition-colors">Contact</a>
+        <a href="visualisation.html" class="px-4 py-3 hover:bg-white/10 transition-colors">Visualisation</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="relative gradient-bg text-white overflow-hidden">
+  <canvas id="plexusCanvas" aria-hidden="true"></canvas>
+  <div class="container mx-auto px-6 py-20 relative z-10 text-center">
+    <h2 class="text-5xl font-bold mb-4 fade-in-up">Our Story at SecureCheck</h2>
+    <p class="text-xl opacity-90 fade-in-up">Helping you stay safe online by spotting data breaches before they cause trouble</p>
+  </div>
+</section>
+
+<section class="py-16 bg-white">
+  <div class="container mx-auto px-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold text-gray-800 mb-4">Why We Started SecureCheck</h2>
+        <p class="text-xl text-gray-600">We created SecureCheck because we know how scary it feels when your personal information gets exposed online. We've been there ourselves, and we wanted to build something that helps everyone stay one step ahead of cyber threats.</p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
+        <div class="bg-purple-50 rounded-2xl p-6 fade-in-up">
+          <h3 class="text-2xl font-bold text-purple-800 mb-4">What We Actually Do</h3>
+          <p class="text-gray-700 mb-4">Think of us as your personal online security guard. We search through huge collections of data from past security breaches to see if your email address has ever been caught up in one of these incidents.</p>
+          <p class="text-gray-700">We help you understand where your information might be floating around online, so you can take control and protect your accounts before something bad happens.</p>
+        </div>
+        
+        <div class="bg-blue-50 rounded-2xl p-6 fade-in-up" style="animation-delay: 0.1s">
+          <h3 class="text-2xl font-bold text-blue-800 mb-4">Why This Matters to You</h3>
+          <p class="text-gray-700 mb-4">Honestly, data breaches happen way more often than people realize. Every year, millions of people's information gets exposed without them even knowing about it.</p>
+          <p class="text-gray-700">Finding out if your email has been part of a breach is like getting an early warning system. It lets you fix things before someone tries to misuse your information.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-16 bg-gray-50">
+  <div class="container mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-gray-800 mb-4">How Our Breach Checking Works</h2>
+      <p class="text-xl text-gray-600">We've made our process simple and straightforward - no confusing tech jargon here!</p>
+    </div>
+
+    <!-- Process Steps -->
+    <div class="max-w-5xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Step 1 -->
+        <div class="process-step text-center">
+          <div class="step-icon w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6 float-animation">
+            <svg class="w-10 h-10 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/>
+              <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800 mb-3">You Share Your Email</h3>
+          <p class="text-gray-600">Just type in your email address - we keep it safe and private. We promise we won't spam you or share your information with anyone else.</p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="process-step text-center">
+          <div class="step-icon w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 float-animation" style="animation-delay: 1s">
+            <svg class="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800 mb-3">We Do the Searching</h3>
+          <p class="text-gray-600">Our system quickly checks through all the breach databases we have access to, including our own custom collection of compromised emails.</p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="process-step text-center">
+          <div class="step-icon w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 float-animation" style="animation-delay: 2s">
+            <svg class="w-10 h-10 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800 mb-3">You Get Clear Results</h3>
+          <p class="text-gray-600">We tell you exactly what we found in plain English, along with practical steps you can take to protect yourself if your email was exposed.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Process Visualization -->
+    <div class="mt-16 bg-white rounded-2xl shadow-lg p-8">
+      <h3 class="text-2xl font-bold text-center mb-8">Where We Get Our Information</h3>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div>
+          <h4 class="text-lg font-semibold mb-4 text-purple-700">Our Own Database</h4>
+          <p class="text-gray-600 mb-4">We've built our own collection of breach data that we regularly update. This means we can check against information that might not be available anywhere else.</p>
+          <ul class="space-y-2 text-gray-600">
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              Fresh data added regularly
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              Quick searches that don't take forever
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              Your privacy always comes first
+            </li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="text-lg font-semibold mb-4 text-blue-700">Public Breach Information</h4>
+          <p class="text-gray-600 mb-4">We also check against well-known public databases of security breaches to make sure we're giving you the most complete picture possible.</p>
+          <ul class="space-y-2 text-gray-600">
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              Always adding new breach information
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              We double-check our sources
+            </li>
+            <li class="flex items-center">
+              <svg class="w-5 h-5 text-green-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+              </svg>
+              We explain what each breach means for you
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-16 bg-white">
+  <div class="container mx-auto px-6">
+    <div class="text-center mb-12">
+      <h2 class="text-4xl font-bold text-gray-800 mb-4">How We Keep Things Secure</h2>
+      <p class="text-xl text-gray-600">We take security seriously because your privacy matters to us</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div class="bg-white rounded-2xl shadow-lg p-6 text-center slide-in-left">
+        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-3">Built With Security in Mind</h3>
+        <p class="text-gray-600">From the very beginning, we designed everything with your safety as our top priority. We treat your information the way we'd want ours treated.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6 text-center slide-in-left" style="animation-delay: 0.1s">
+        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-3">Fast But Thorough</h3>
+        <p class="text-gray-600">We've worked hard to make our searches both quick and comprehensive. You get your results in seconds, not minutes, without cutting corners.</p>
+      </div>
+
+      <div class="bg-white rounded-2xl shadow-lg p-6 text-center slide-in-left" style="animation-delay: 0.2s">
+        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"/>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-800 mb-3">Always Getting Better</h3>
+        <p class="text-gray-600">The online world changes fast, and so do we. We're constantly updating our systems and adding new breach information to keep you protected.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-16 bg-gray-50">
+  <div class="container mx-auto px-6">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold text-gray-800 mb-4">Questions We Get Asked A Lot</h2>
+        <p class="text-xl text-gray-600">Here are answers to some common things people wonder about</p>
+      </div>
+
+      <div class="space-y-6">
+        <div class="bg-white rounded-2xl shadow-lg p-6 fade-in-up">
+          <h3 class="text-xl font-bold text-gray-800 mb-3">How do you protect my privacy?</h3>
+          <p class="text-gray-600">This is probably our most important question! When you check your email with us, we only use it to search through our breach databases. We don't keep your email address stored away for later, and we definitely don't share it with anyone else. Your trust means everything to us.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 fade-in-up" style="animation-delay: 0.1s">
+          <h3 class="text-xl font-bold text-gray-800 mb-3">What should I do if my email shows up in a breach?</h3>
+          <p class="text-gray-600">First, don't panic! We'll give you clear steps to follow. Usually this means changing passwords for any important accounts that use that email, turning on two-factor authentication if you can, and keeping an eye on your accounts for anything suspicious. We break it down so it's not overwhelming.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 fade-in-up" style="animation-delay: 0.2s">
+          <h3 class="text-xl font-bold text-gray-800 mb-3">How often do you update your information?</h3>
+          <p class="text-gray-600">We're always adding new breach data as it becomes available. Our own database gets updated whenever we find new, verified information, and we regularly check public sources too. We want to make sure you're getting the most current picture of your online security.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6 fade-in-up" style="animation-delay: 0.3s">
+          <h3 class="text-xl font-bold text-gray-800 mb-3">Can companies use SecureCheck for their team?</h3>
+          <p class="text-gray-600">Absolutely! We work with businesses who want to check if any of their employees' emails have been compromised. We offer special access and tools that make it easy for companies to keep their whole team secure. Just reach out to us and we'll help you get set up.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="py-16 gradient-bg text-white text-center">
+  <div class="container mx-auto px-6">
+    <h2 class="text-4xl font-bold mb-6">Ready to check your email security?</h2>
+    <p class="text-xl mb-8 max-w-2xl mx-auto opacity-90">It only takes a minute to see if your information has been exposed - and it's completely free.</p>
+    <a href="index.html" class="inline-block px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-300 ripple">
+      Check Your Email Now
+    </a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-white py-12">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold">SecureCheck</h3>
+                </div>
+                <p class="text-gray-400">Protecting your digital identity by monitoring data breaches worldwide.</p>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Services</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-white transition-colors">Breach Monitoring</a></li>
+                    <li><a href="api.html" class="hover:text-white transition-colors">API Access</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Security Reports</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Company</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="about.html" class="hover:text-white transition-colors">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Contact</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li>support@securecheck.com</li>
+                    <li>+91 8421197619</li>
+                    <li>24/7 Support Available</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2025 SecureCheck. All rights reserved. This is a demo version.</p>
+        </div>
+    </div>
+</footer>
+<script>
+function initParticles() {
+  const canvas = document.getElementById('headerParticles'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'); let w, h, particles;
+  function resize(){ w=canvas.width=canvas.offsetWidth; h=canvas.height=canvas.offsetHeight;
+    particles=Array.from({length:Math.floor(w/18)},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*2+.6}));
+  }
+  function draw(){ ctx.clearRect(0,0,w,h); ctx.fillStyle='rgba(255,255,255,.8)';
+    particles.forEach(p=>{ p.x+=p.vx;p.y+=p.vy; if(p.x<0||p.x>w)p.vx*=-1; if(p.y<0||p.y>h)p.vy*=-1; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); });
+    ctx.strokeStyle='rgba(255,255,255,.2)';
+    for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy); if(dist<80){ctx.globalAlpha=1-dist/80; ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.stroke(); ctx.globalAlpha=1;}}}
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize); resize(); draw();
+}
+function initPlexusBackground(){
+  const canvas=document.getElementById('plexusCanvas'); if(!canvas) return; const ctx=canvas.getContext('2d'); let width,height,dpi; let points=[]; const maxDist=120;
+  class Point{constructor(){this.x=Math.random()*width;this.y=Math.random()*height;this.vx=(Math.random()-.5)*.5;this.vy=(Math.random()-.5)*.5;this.radius=1.5} update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0)this.x=width;if(this.x>width)this.x=0;if(this.y<0)this.y=height;if(this.y>height)this.y=0}}
+  function initPoints(){points=[]; const numPoints=Math.floor((width*height)/20000); for(let i=0;i<numPoints;i++){points.push(new Point())}}
+  function resize(){ dpi=window.devicePixelRatio||1; const parent=canvas.parentElement; const style=getComputedStyle(parent); width=parseInt(style.width)*dpi; height=parseInt(style.height)*dpi; canvas.width=width; canvas.height=height; initPoints();}
+  function animate(){ ctx.clearRect(0,0,width,height); points.forEach(p=>p.update());
+    for(let i=0;i<points.length;i++){for(let j=i+1;j<points.length;j++){const p1=points[i],p2=points[j]; const dx=p1.x-p2.x,dy=p1.y-p2.y,dist=Math.sqrt(dx*dx+dy*dy); if(dist<maxDist){ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.strokeStyle=`rgba(255,255,255,${1-dist/maxDist})`; ctx.lineWidth=1*dpi; ctx.stroke();}}}
+    points.forEach(p=>{ctx.beginPath(); ctx.arc(p.x,p.y,p.radius*dpi,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,.8)'; ctx.fill();}); requestAnimationFrame(animate);
+  }
+  window.addEventListener('resize',resize); resize(); animate();
+}
+document.addEventListener('click',function(e){const btn=e.target.closest('.ripple'); if(!btn) return; const circle=document.createElement('span'); const d=Math.max(btn.clientWidth,btn.clientHeight); const r=d/2; circle.style.width=circle.style.height=`${d}px`; circle.style.left=`${e.clientX-(btn.getBoundingClientRect().left+r)}px`; circle.style.top=`${e.clientY-(btn.getBoundingClientRect().top+r)}px`; btn.appendChild(circle); setTimeout(()=>circle.remove(),600);});
+function initMobileMenu(){ const btn=document.getElementById('mobileMenuBtn'); const container=document.getElementById('mobileNavContainer'); if(!btn||!container) return; let open=false; btn.addEventListener('click',()=>{ open=!open; container.classList.toggle('hidden',!open); }); }
+
+// Intersection Observer for scroll animations
+function initScrollAnimations() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('aos-animate');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-in-up, .slide-in-left').forEach(el => {
+    observer.observe(el);
+  });
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  initParticles(); 
+  initPlexusBackground(); 
+  initMobileMenu();
+  initScrollAnimations();
+});
+</script>
+</body>
+</html>

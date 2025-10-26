@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SecureCheck - Contact</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+:root {
+  --primary-1: #667eea;
+  --primary-2: #764ba2;
+  --accent: #ff7e5f;
+}
+body { box-sizing: border-box; }
+
+/* Animations */
+@keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideInLeft { from{opacity:0;transform:translateX(-50px)} to{opacity:1;transform:translateX(0)} }
+@keyframes bounce { 0%,20%,53%,80%,100%{transform:translate3d(0,0,0)} 40%,43%{transform:translate3d(0,-30px,0)} 70%{transform:translate3d(0,-15px,0)} 90%{transform:translate3d(0,-4px,0)} }
+@keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+@keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+@keyframes shimmer { 0%{background-position: -200% 0} 100%{background-position: 200% 0} }
+
+.gradient-bg {
+  background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 12s ease infinite;
+}
+.glass-effect { backdrop-filter: blur(10px); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2); }
+.fade-in-up{animation:fadeInUp .6s ease-out}
+.slide-in-left{animation:slideInLeft .6s ease-out}
+.bounce-animation{animation:bounce 1s}
+.loading-spinner{border:3px solid #f3f3f3;border-top:3px solid #667eea;border-radius:50%;width:30px;height:30px;animation:spin 1s linear infinite}
+.shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,.08), rgba(255,255,255,.25), rgba(255,255,255,.08));
+  background-size: 200% 100%;
+  animation: shimmer 2.2s linear infinite;
+}
+
+/* Ripple */
+.ripple { position:relative; overflow:hidden; transition: box-shadow .2s ease, transform .1s ease; }
+.ripple:hover { box-shadow:0 0 15px rgba(255,255,255,.25),0 8px 24px rgba(0,0,0,.15) }
+.ripple:active { transform: translateY(1px) scale(.99) }
+.ripple span { position:absolute; border-radius:50%; transform:scale(0); animation:ripple 600ms linear; background-color: rgba(255,255,255,.5) }
+@keyframes ripple { to{ transform: scale(4); opacity: 0 } }
+
+/* Header particles + plexus */
+header #headerParticles{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.35;z-index:0}
+#plexusCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.4}
+@media (prefers-reduced-motion: reduce){#plexusCanvas, #headerParticles{display:none}}
+</style>
+</head>
+<body class="min-h-full bg-gray-50">
+<header class="gradient-bg text-white shadow-lg relative">
+  <canvas id="headerParticles"></canvas>
+  <div class="container mx-auto px-6 py-4 relative z-10">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+        </div>
+        <h1 class="text-2xl font-bold">SecureCheck</h1>
+      </div>
+      <nav id="primaryNav" class="hidden md:flex space-x-6">
+       <a href="/" class="hover:text-purple-200 transition-colors">Home</a>
+                <a href="about" class="hover:text-purple-200 transition-colors">About</a>
+                <a href="api" class="hover:text-purple-200 transition-colors">API</a>
+                <a href="contact" class="hover:text-purple-200 transition-colors">Contact</a>
+                <a href="visualisation" class="hover:text-purple-200 transition-colors">Visualisation</a>
+      </nav>
+      <button id="mobileMenuBtn" class="md:hidden ml-4 p-2 rounded-lg glass-effect border border-white/20 focus:outline-none hover:bg-white/10 transition-all ripple" aria-label="Toggle navigation">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div id="mobileNavContainer" class="md:hidden hidden mt-3 glass-effect rounded-lg overflow-hidden">
+      <div class="flex flex-col">
+        <a href="/" class="px-4 py-3 hover:bg-white/10 transition-colors">Home</a>
+        <a href="about" class="px-4 py-3 hover:bg-white/10 transition-colors">About</a>
+        <a href="api" class="px-4 py-3 hover:bg-white/10 transition-colors">API</a>
+        <a href="contact" class="px-4 py-3 hover:bg-white/10 transition-colors">Contact</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="relative gradient-bg text-white overflow-hidden">
+  <canvas id="plexusCanvas" aria-hidden="true"></canvas>
+  <div class="container mx-auto px-6 py-20 relative z-10 text-center">
+    <h2 class="text-5xl font-bold mb-4 fade-in-up">Get in Touch</h2>
+    <p class="text-xl opacity-90 fade-in-up">Got questions? We're here to help! Reach out anytime.</p>
+  </div>
+</section>
+
+<section class="py-16">
+  <div class="container mx-auto px-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Card: Email -->
+      <div class="bg-white rounded-2xl shadow-lg p-6 slide-in-left">
+        <div class="flex items-center space-x-4 mb-4">
+          <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"/><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold">Email Us</h3>
+            <p class="text-gray-600">We usually reply within a few hours</p>
+          </div>
+        </div>
+        <span class="inline-block mt-2 px-5 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 transition ripple">Send Us an Email</span>
+      </div>
+
+      <!-- Card: Phone -->
+      <div class="bg-white rounded-2xl shadow-lg p-6 slide-in-left" style="animation-delay:.08s">
+        <div class="flex items-center space-x-4 mb-4">
+          <div class="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-orange-600" fill="currentColor" viewBox="0 0 20 20"><path d="M2 3.5A1.5 1.5 0 013.5 2h2A1.5 1.5 0 017 3.5V5a1 1 0 01-1 1H4v2a12 12 0 0012 12h2a1 1 0 001-1v-2.5a1.5 1.5 0 00-1.5-1.5H14a1 1 0 01-1-1v-2a1.5 1.5 0 011.5-1.5H17A1 1 0 0018 8V6a1 1 0 00-1-1h-1.5A1.5 1.5 0 0014 3.5V2H3.5A1.5 1.5 0 002 3.5v0z"/></svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold">Call Us</h3>
+            <p class="text-gray-600">Perfect for urgent questions</p>
+          </div>
+        </div>
+        <span class="inline-block mt-2 px-5 py-2 rounded-lg bg-orange-500 text-white hover:bg-orange-600 transition ripple">Give Us a Call</span>
+      </div>
+
+      <!-- Card: Hours -->
+      <div class="bg-white rounded-2xl shadow-lg p-6 slide-in-left" style="animation-delay:.16s">
+        <div class="flex items-center space-x-4 mb-4">
+          <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+            <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.75-12.75a.75.75 0 00-1.5 0v4.5c0 .414.336.75.75.75h3a.75.75 0 000-1.5H10.75v-3.75z" clip-rule="evenodd"/></svg>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold">We're Always Here</h3>
+            <p class="text-gray-600">24/7 support for when you need us</p>
+          </div>
+        </div>
+        <span class="inline-block mt-2 px-5 py-2 rounded-lg bg-green-600 text-white">Always Available</span>
+      </div>
+    </div>
+
+    <!-- Contact form -->
+    <div class="mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="bg-white rounded-2xl shadow-lg p-6 fade-in-up">
+        <h3 class="text-2xl font-bold mb-4">Send us a message directly</h3>
+        <form id="contactForm" class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700">What's your name?</label>
+            <input type="text" required class="mt-1 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-4 focus:ring-purple-300" placeholder="We'd love to know who you are"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">Your email address</label>
+            <input type="email" required class="mt-1 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-4 focus:ring-purple-300" placeholder="So we can get back to you"/>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">What's on your mind?</label>
+            <textarea rows="5" required class="mt-1 w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-4 focus:ring-purple-300" placeholder="Tell us how we can help you..."></textarea>
+          </div>
+          <button type="submit" class="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg transition ripple">Send Your Message</button>
+        </form>
+        <div id="formToast" class="hidden mt-4 p-4 rounded-lg bg-green-50 text-green-700 border border-green-200">Thanks for reaching out! We'll get back to you as soon as we can.</div>
+      </div>
+
+      <div class="rounded-2xl p-6 gradient-bg text-white relative overflow-hidden">
+        <div class="absolute inset-0 shimmer opacity-20"></div>
+        <h3 class="text-2xl font-bold mb-3 relative z-10">What can we help you with?</h3>
+        <ul class="space-y-3 relative z-10">
+          <li>• Help setting up your account</li>
+          <li>• Questions about how our service works</li>
+          <li>• Business accounts and team access</li>
+          <li>• Reporting security concerns</li>
+          <li>• Just saying hello!</li>
+        </ul>
+        <div class="mt-6 text-sm opacity-90 relative z-10">
+          Prefer to email us directly? That works too! <span class="underline font-semibold text-white/90">support@securecheck.com</span><br><br>
+          Prefer to call us directly if you want urgent? That works too! <span class="underline font-semibold text-white/90">+91 8421197619</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="mt-16 bg-white rounded-2xl shadow-lg p-8">
+      <h2 class="text-3xl font-bold text-center mb-8">Common Questions We Get Asked</h2>
+      <div class="space-y-6">
+        <div class="border-b border-gray-200 pb-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-3">How quickly do you usually respond to messages?</h3>
+          <p class="text-gray-600">We try to get back to everyone within a few hours, and usually much faster than that! If you have something urgent, calling us is your best bet.</p>
+        </div>
+
+        <div class="border-b border-gray-200 pb-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-3">Do you offer support for businesses and teams?</h3>
+          <p class="text-gray-600">Absolutely! We work with lots of businesses and can set up special accounts for teams. Just let us know what you need and we'll help you get started.</p>
+        </div>
+
+        <div class="border-b border-gray-200 pb-6">
+          <h3 class="text-xl font-bold text-gray-800 mb-3">What if I'm not very tech-savvy?</h3>
+          <p class="text-gray-600">No worries at all! We're here to help everyone, no matter how much you know about technology. We'll explain things in plain English and walk you through any questions you have.</p>
+        </div>
+
+        <div class="pb-2">
+          <h3 class="text-xl font-bold text-gray-800 mb-3">Can I get help understanding my breach report?</h3>
+          <p class="text-gray-600">Of course! If you've checked your email and found it in a breach, we can help you understand what it means and what steps you should take next to protect yourself.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-white py-12">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold">SecureCheck</h3>
+                </div>
+                <p class="text-gray-400">Helping regular people stay safe online by keeping an eye on data breaches.</p>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">What We Offer</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-white transition-colors">Email Security Checks</a></li>
+                    <li><a href="api.html" class="hover:text-white transition-colors">Tools for Developers</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Security Tips & Advice</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Our Company</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="about.html" class="hover:text-white transition-colors">Our Story</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Privacy Promise</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">How We Work</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Get In Touch</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li>support@securecheck.com</li>
+                    <li>+91 8421197619</li>
+                    <li>We're here whenever you need us</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2025 SecureCheck. All rights reserved. This is a demo version.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+function initParticles() {
+  const canvas = document.getElementById('headerParticles'); if (!canvas) return;
+  const ctx = canvas.getContext('2d'); let w, h, particles;
+  function resize(){ w=canvas.width=canvas.offsetWidth; h=canvas.height=canvas.offsetHeight;
+    particles=Array.from({length:Math.floor(w/18)},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*2+.6}));
+  }
+  function draw(){ ctx.clearRect(0,0,w,h); ctx.fillStyle='rgba(255,255,255,.8)';
+    particles.forEach(p=>{ p.x+=p.vx;p.y+=p.vy; if(p.x<0||p.x>w)p.vx*=-1; if(p.y<0||p.y>h)p.vy*=-1; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); });
+    ctx.strokeStyle='rgba(255,255,255,.2)';
+    for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy); if(dist<80){ctx.globalAlpha=1-dist/80; ctx.beginPath(); ctx.moveTo(particles[i].x,particles[i].y); ctx.lineTo(particles[j].x,particles[j].y); ctx.stroke(); ctx.globalAlpha=1;}}}
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize); resize(); draw();
+}
+function initPlexusBackground(){
+  const canvas=document.getElementById('plexusCanvas'); if(!canvas) return; const ctx=canvas.getContext('2d'); let width,height,dpi; let points=[]; const maxDist=120;
+  class Point{constructor(){this.x=Math.random()*width;this.y=Math.random()*height;this.vx=(Math.random()-.5)*.5;this.vy=(Math.random()-.5)*.5;this.radius=1.5} update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0)this.x=width;if(this.x>width)this.x=0;if(this.y<0)this.y=height;if(this.y>height)this.y=0}}
+  function initPoints(){points=[]; const numPoints=Math.floor((width*height)/20000); for(let i=0;i<numPoints;i++){points.push(new Point())}}
+  function resize(){ dpi=window.devicePixelRatio||1; const parent=canvas.parentElement; const style=getComputedStyle(parent); width=parseInt(style.width)*dpi; height=parseInt(style.height)*dpi; canvas.width=width; canvas.height=height; initPoints();}
+  function animate(){ ctx.clearRect(0,0,width,height); points.forEach(p=>p.update());
+    for(let i=0;i<points.length;i++){for(let j=i+1;j<points.length;j++){const p1=points[i],p2=points[j]; const dx=p1.x-p2.x,dy=p1.y-p2.y,dist=Math.sqrt(dx*dx+dy*dy); if(dist<maxDist){ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.strokeStyle=`rgba(255,255,255,${1-dist/maxDist})`; ctx.lineWidth=1*dpi; ctx.stroke();}}}
+    points.forEach(p=>{ctx.beginPath(); ctx.arc(p.x,p.y,p.radius*dpi,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,.8)'; ctx.fill();}); requestAnimationFrame(animate);
+  }
+  window.addEventListener('resize',resize); resize(); animate();
+}
+document.addEventListener('click',function(e){const btn=e.target.closest('.ripple'); if(!btn) return; const circle=document.createElement('span'); const d=Math.max(btn.clientWidth,btn.clientHeight); const r=d/2; circle.style.width=circle.style.height=`${d}px`; circle.style.left=`${e.clientX-(btn.getBoundingClientRect().left+r)}px`; circle.style.top=`${e.clientY-(btn.getBoundingClientRect().top+r)}px`; btn.appendChild(circle); setTimeout(()=>circle.remove(),600);});
+function initMobileMenu(){ const btn=document.getElementById('mobileMenuBtn'); const container=document.getElementById('mobileNavContainer'); if(!btn||!container) return; let open=false; btn.addEventListener('click',()=>{ open=!open; container.classList.toggle('hidden',!open); }); }
+document.getElementById('contactForm')?.addEventListener('submit',function(e){e.preventDefault(); document.getElementById('formToast').classList.remove('hidden'); setTimeout(()=>document.getElementById('formToast').classList.add('hidden'),4000); this.reset();});
+document.addEventListener('DOMContentLoaded',()=>{initParticles(); initPlexusBackground(); initMobileMenu();});
+</script>
+</body>
+</html>

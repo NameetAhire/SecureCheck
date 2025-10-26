@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SecureCheck - API Batch Checker</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+/* Custom style variables */
+:root { --primary-1:#667eea; --primary-2:#764ba2; --accent:#ff7e5f; }
+/* Global styles for the custom theme */
+body { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+/* Keyframe Animations */
+@keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideInLeft { from{opacity:0;transform:translateX(-30px)} to{opacity:1;transform:translateX(0)} }
+@keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+
+/* Utility Classes */
+.gradient-bg {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 12s ease infinite;
+}
+.glass-effect { backdrop-filter: blur(10px); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.2); }
+.fade-in-up { animation: fadeInUp .6s ease-out; }
+.slide-in-left { animation: slideInLeft .6s ease-out; }
+/* Specific class for table cells to prevent line breaking URLs/emails */
+.break-all { word-break: break-all; }
+
+/* Canvas style for particle effect - MUST be absolute to cover header */
+#headerParticles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none; /* Allows clicks to pass through to the content */
+}
+
+/* Custom ripple effect for the mobile button */
+.ripple {
+    position: relative;
+    overflow: hidden;
+}
+.ripple:after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.4);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1) translate(-50%, -50%);
+    transition: all 0.5s ease-out;
+}
+.ripple:active:after {
+    transform: scale(20) translate(-50%, -50%);
+    opacity: 1;
+    transition: 0s;
+}
+
+</style>
+</head>
+<body class="min-h-full bg-gray-50 flex flex-col">
+<header class="gradient-bg text-white shadow-lg relative">
+    <canvas id="headerParticles"></canvas>
+    <div class="container mx-auto px-6 py-4 relative z-10">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+                </div>
+                <h1 class="text-2xl font-bold">SecureCheck</h1>
+            </div>
+            <nav id="primaryNav" class="hidden md:flex space-x-6">
+                <a href="/" class="hover:text-purple-200 transition-colors">Home</a>
+                <a href="about" class="hover:text-purple-200 transition-colors">About</a>
+                <a href="api" class="hover:text-purple-200 transition-colors">API</a>
+                <a href="contact" class="hover:text-purple-200 transition-colors">Contact</a>
+                <a href="visualisation" class="hover:text-purple-200 transition-colors">Visualisation</a>
+            </nav>
+            <button id="mobileMenuBtn" class="md:hidden ml-4 p-2 rounded-lg glass-effect border border-white/20 focus:outline-none hover:bg-white/10 transition-all ripple" aria-label="Toggle navigation">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+        </div>
+        <div id="mobileNavContainer" class="md:hidden hidden mt-3 glass-effect rounded-lg overflow-hidden">
+            <div class="flex flex-col">
+                <a href="/" class="px-4 py-3 hover:bg-white/10 transition-colors">Home</a>
+                <a href="about" class="px-4 py-3 hover:bg-white/10 transition-colors">About</a>
+                <a href="api" class="px-4 py-3 hover:bg-white/10 transition-colors">API</a>
+                <a href="contact" class="px-4 py-3 hover:bg-white/10 transition-colors">Contact</a>
+                <a href="visualisation" class="px-4 py-3 hover:bg-white/10 transition-colors">Visualisation</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+
+<main class="flex-grow container mx-auto p-4 md:p-8">
+    <div class="max-w-4xl mx-auto bg-white shadow-2xl p-8 rounded-xl fade-in-up">
+        <h1 class="text-4xl font-extrabold text-gray-800 mb-6 border-b pb-4 text-center">
+            API & Bulk Email Check
+        </h1>
+        <p class="text-center text-gray-500 mb-6">
+            Upload your CSV file to check emails against known data breaches (1 check/second due to API rate limits).
+        </p>
+
+        {% if error %}
+        <div role="alert" class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-100 font-medium">
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" enctype="multipart/form-data" action="/api" class="space-y-6 mb-8 border p-6 rounded-lg bg-gray-50 shadow-inner">
+            <label class="block text-gray-700 font-semibold text-lg" for="csv_file">Select CSV File:</label>
+            <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <input type="file" name="csv_file" id="csv_file" accept=".csv" required 
+                    class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white p-2.5 
+                        file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 
+                        file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 
+                        hover:file:bg-indigo-100 transition duration-150"
+                >
+                <button type="submit" class="w-full sm:w-auto flex-shrink-0 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-6 rounded-lg shadow-lg transition duration-200 transform hover:scale-[1.01]">
+                    <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                    Check Emails
+                </button>
+            </div>
+            <p class="text-sm text-gray-500 mt-2">
+                <a href="/breached_email.csv" class="text-indigo-600 hover:text-indigo-800 underline transition duration-150">Download sample.</a> Emails must be in the first column, with no header row.
+            </p>
+        </form>
+
+        {% if results %}
+        <h2 class="text-2xl font-bold text-gray-800 mb-4 pt-4 border-t">Results ({{ results|length }} Emails Checked)</h2>
+        <div class="overflow-x-auto shadow-xl rounded-lg border border-gray-200">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider rounded-tl-lg">Email</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider rounded-tr-lg">Breaches Found</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for r in results %}
+                    <tr class="hover:bg-indigo-50/50 transition-colors">
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 break-all">{{ r.email }}</td>
+                        
+                        <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold">
+                            <span class="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold leading-none text-white {{ r.status_class }}">
+                                {{ r.status_icon }} {{ r.status }}
+                            </span>
+                        </td>
+
+                        <td class="px-4 py-3 text-sm text-gray-700">
+                            {% if r.breaches %}
+                                <ul class="space-y-1">
+                                {% for b in r.breaches %}
+                                    <li class="p-1 border-l-4 border-indigo-400 bg-indigo-50 rounded-sm">
+                                        <span class="font-semibold text-indigo-800">{{ b.name }}</span> 
+                                        <span class="text-gray-500 text-xs">({{ b.date or 'No Date' }})</span>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                <span class="text-gray-500">None</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="flex flex-col items-center text-center text-gray-600 py-16">
+            <svg class="w-32 h-32 mb-6 text-indigo-400" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5V19a2 2 0 002 2h3.5m8-4.5V19a2 2 0 01-2 2H10m5.5-6.5V4a2 2 0 00-2-2h-3a2 2 0 00-2 2v10.5m8.5 0H3m13.5 0L17 19m-10-2.5L6.5 19"></path>
+            </svg>
+            <h2 class="text-xl font-semibold mb-2">Ready to Check</h2>
+            <p class="mb-4 text-gray-500">Upload a CSV file above to begin the security analysis.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="container mx-auto px-6 mt-8">
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-2xl shadow-lg p-6 slide-in-left">
+                <h3 class="text-2xl font-bold mb-4 flex items-center gap-2 border-b pb-2 text-gray-800">
+                    <svg class="w-6 h-6 text-indigo-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
+                    </svg>
+                    API Documentation
+                </h3>
+                <p class="text-gray-600 mb-6">Our API allows you to check if email addresses have been compromised in known data breaches for single, real-time lookups.</p>
+                
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-2 text-gray-700">Endpoint</h4>
+                    <div class="bg-gray-100 p-4 rounded-lg">
+                        <code class="text-indigo-700 font-mono text-sm sm:text-base">POST /api/check-email</code>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-2 text-gray-700">Request Body</h4>
+                    <p class="text-sm text-gray-500 mb-2">Content-Type: application/json</p>
+                    <div class="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+                        <pre class="text-sm font-mono"><code>{
+    "email": "user@example.com"
+}</code></pre>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <h4 class="text-lg font-semibold mb-2 text-gray-700">Response (200 OK)</h4>
+                    <div class="bg-gray-100 p-4 rounded-lg overflow-x-auto">
+                        <pre class="text-sm font-mono"><code>{
+    "email": "user@example.com",
+    "status": "breached",
+    "breaches": [
+        "LinkedIn (2012)",
+        "Adobe (2013)"
+    ]
+}</code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+
+<footer class="bg-gray-800 text-white py-12">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold">SecureCheck</h3>
+                </div>
+                <p class="text-gray-400">Protecting your digital identity by monitoring data breaches worldwide.</p>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Services</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-white transition-colors">Breach Monitoring</a></li>
+                    <li><a href="api.html" class="hover:text-white transition-colors">API Access</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Security Reports</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Company</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="about.html" class="hover:text-white transition-colors">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Contact</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li>support@securecheck.com</li>
+                    <li>+91 8421197619</li>
+                    <li>24/7 Support Available</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2025 SecureCheck. All rights reserved. This is a demo version.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // --- PARTICLE EFFECT LOGIC (for headerParticles canvas) ---
+
+    const canvas = document.getElementById('headerParticles');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 50;
+
+    // Adjust canvas size to fit the header
+    function resizeCanvas() {
+        // Use the parent header's dimensions
+        const header = canvas.parentElement;
+        canvas.width = header.clientWidth;
+        canvas.height = header.clientHeight;
+    }
+
+    // Particle constructor
+    class Particle {
+        constructor() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 2 + 1; // 1 to 3
+            this.speedX = Math.random() * 0.3 - 0.15; // -0.15 to 0.15
+            this.speedY = Math.random() * 0.3 - 0.15; // -0.15 to 0.15
+            this.color = 'rgba(255, 255, 255, ' + (Math.random() * 0.5 + 0.3) + ')';
+        }
+        update() {
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            // Loop particles when they hit boundaries
+            if (this.x > canvas.width || this.x < 0) this.speedX *= -1;
+            if (this.y > canvas.height || this.y < 0) this.speedY *= -1;
+        }
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    // Initialization
+    function init() {
+        resizeCanvas();
+        particles = [];
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
+    }
+
+    // Animation Loop
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+
+        for (let i = 0; i < particles.length; i++) {
+            particles[i].update();
+            particles[i].draw();
+            
+            // Draw lines between close particles
+            for (let j = i; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x;
+                const dy = particles[i].y - particles[j].y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < 100) {
+                    ctx.strokeStyle = `rgba(255, 255, 255, ${1 - (distance / 100)})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(particles[i].x, particles[i].y);
+                    ctx.lineTo(particles[j].x, particles[j].y);
+                    ctx.stroke();
+                }
+            }
+        }
+        requestAnimationFrame(animate);
+    }
+
+    // Mobile menu toggle logic
+    document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+        const mobileNav = document.getElementById('mobileNavContainer');
+        mobileNav.classList.toggle('hidden');
+    });
+
+
+    // Start the animation on window load and handle resize
+    window.addEventListener('load', init);
+    window.addEventListener('resize', resizeCanvas);
+    
+    // Initial start if the load event already fired
+    if (document.readyState === 'complete') {
+        init();
+        animate();
+    } else {
+        // Wait for canvas to be correctly sized before starting animation
+        window.addEventListener('load', () => {
+            animate();
+        });
+    }
+
+</script>
+</body>
+</html>

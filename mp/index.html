@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="en"> 
+<head> 
+<meta charset="UTF-8"> 
+<meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+<title>SecureCheck - Email Breach Detection</title> 
+<script src="https://cdn.tailwindcss.com"></script> 
+<style> 
+:root { 
+    --primary-1: #667eea; 
+    --primary-2: #764ba2; 
+    --accent: #ff7e5f; 
+    --success: #22c55e; 
+    --danger: #ef4444; 
+    --warning: #f59e0b; 
+    --info: #3b82f6; 
+}
+
+body {
+    box-sizing: border-box;
+}
+
+/* Base animations */
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+@keyframes countUp {
+    from { transform: scale(0.5); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+@keyframes slideInLeft {
+    from { opacity: 0; transform: translateX(-50px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes bounce {
+    0%, 20%, 53%, 80%, 100% { transform: translate3d(0,0,0); }
+    40%, 43% { transform: translate3d(0, -30px, 0); }
+    70% { transform: translate3d(0, -15px, 0); }
+    90% { transform: translate3d(0, -4px, 0); }
+}
+@keyframes gradientShift {
+    0% { background-position: 0% 50% }
+    50% { background-position: 100% 50% }
+    100% { background-position: 0% 50% }
+}
+
+.fade-in-up { animation: fadeInUp 0.6s ease-out; }
+.pulse-animation { animation: pulse 2s infinite; }
+.count-up { animation: countUp 0.8s ease-out; }
+.slide-in-left { animation: slideInLeft 0.6s ease-out; }
+.bounce-animation { animation: bounce 1s; }
+
+.gradient-bg {
+    background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+    background-size: 200% 200%;
+    animation: gradientShift 12s ease infinite;
+}
+.glass-effect {
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.breach-card {
+    transition: all 0.3s ease;
+    transform: translateY(0);
+}
+.breach-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.breach-card-grad {
+    background: linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(246,248,255,1) 100%);
+}
+
+.loading-spinner {
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin { 0% { transform: rotate(0deg);} 100% { transform: rotate(360deg);} }
+
+.progress-bar { transition: width 0.5s ease-in-out; }
+
+/* Header particles */
+header #headerParticles {
+    position: absolute; inset: 0;
+    width: 100%; height: 100%;
+    pointer-events: none; opacity: 0.35;
+    z-index: 0;
+}
+
+/* Logo hover rotate */
+.logo-badge:hover { transform: rotate(10deg) scale(1.04); }
+.logo-badge { transition: transform 0.3s ease; }
+
+/* Glow effects for status badges */
+.glow-red { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); animation: glowRed 2s infinite; }
+@keyframes glowRed {
+    0% { box-shadow: 0 0 0 0 rgba(239,68,68,.4); }
+    70% { box-shadow: 0 0 0 10px rgba(239,68,68,0); }
+    100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+}
+.glow-green { box-shadow: 0 0 0 0 rgba(34,197,94, 0.7); animation: glowGreen 2s infinite; }
+@keyframes glowGreen {
+    0% { box-shadow: 0 0 0 0 rgba(34,197,94,.4); }
+    70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+    100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+/* Button ripple + glow */
+.ripple {
+    position: relative; overflow: hidden;
+    transition: box-shadow .2s ease, transform .1s ease;
+}
+.ripple:hover { box-shadow: 0 0 15px rgba(255,255,255,.25), 0 8px 24px rgba(0,0,0,.15); }
+.ripple:active { transform: translateY(1px) scale(0.99); }
+.ripple span {
+    position: absolute; border-radius: 50%;
+    transform: scale(0);
+    animation: ripple 600ms linear;
+    background-color: rgba(255,255,255,0.5);
+}
+@keyframes ripple { to { transform: scale(4); opacity: 0; } }
+
+/* Mobile nav animation */
+.mobile-menu-enter { transform: translateY(-10px); opacity: 0; }
+.mobile-menu-enter-active { transform: translateY(0); opacity: 1; transition: all .25s ease; }
+.mobile-menu-exit { transform: translateY(0); opacity: 1; }
+.mobile-menu-exit-active { transform: translateY(-10px); opacity: 0; transition: all .2s ease; }
+
+/* IntersectionObserver base */
+.aos-init { opacity: 0; transform: translateY(20px); transition: all .6s ease; }
+.aos-animate { opacity: 1; transform: translateY(0); }
+
+/* Verified badge style */
+.verified-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 9999px; font-weight: 600; font-size: 12px;
+    background: rgba(16,185,129,.12); color: #10b981;
+}
+
+/* --- Fullscreen Plexus Background --- */
+#plexusCanvas {
+  position: absolute;
+  inset: 10;
+  width: 200%;
+  height: 200%;
+  z-index: 0;
+  opacity: 1500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #plexusCanvas {
+    display: none;
+  }
+}
+</style>
+</head> 
+
+<body class="min-h-full bg-gray-50"> 
+<!-- Header --> 
+<header class="gradient-bg text-white shadow-lg"> 
+    <canvas id="headerParticles"></canvas>
+
+    <div class="container mx-auto px-6 py-4 relative z-10">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center logo-badge">
+                    <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold">SecureCheck</h1>
+            </div>
+            <nav id="primaryNav" class="hidden md:flex space-x-6">
+                <a href="/" class="hover:text-purple-200 transition-colors">Home</a>
+                <a href="about" class="hover:text-purple-200 transition-colors">About</a>
+                <a href="api" class="hover:text-purple-200 transition-colors">API</a>
+                <a href="contact" class="hover:text-purple-200 transition-colors">Contact</a>
+                <a href="visualisation" class="hover:text-purple-200 transition-colors">Visualisation</a>
+            </nav>
+            <button id="mobileMenuBtn" class="md:hidden ml-4 p-2 rounded-lg glass-effect border border-white/20 focus:outline-none hover:bg-white/10 transition-all ripple" aria-label="Toggle navigation">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+        <!-- Mobile nav container -->
+        <div id="mobileNavContainer" class="md:hidden hidden mt-3 glass-effect rounded-lg overflow-hidden">
+            <div class="flex flex-col">
+                <a href="#" class="px-4 py-3 hover:bg-white/10 transition-colors">Home</a>
+                <a href="#" class="px-4 py-3 hover:bg-white/10 transition-colors">About</a>
+                <a href="#" class="px-4 py-3 hover:bg-white/10 transition-colors">API</a>
+                <a href="#" class="px-4 py-3 hover:bg-white/10 transition-colors">Contact</a>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Hero Section -->
+<section class="gradient-bg relative text-white py-20 overflow-hidden">
+    <canvas id="plexusCanvas" aria-hidden="true"></canvas>
+
+    <div class="container mx-auto px-6 text-center relative z-10">
+        <h2 id="mainTitle" class="text-5xl font-bold mb-6 fade-in-up">Check if your email has been compromised</h2>
+        <p class="text-xl mb-12 opacity-90 fade-in-up">Discover if your email address breach list</p>
+        
+        <div class="max-w-2xl mx-auto fade-in-up">
+            <form id="searchForm" class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <input 
+                        type="email" 
+                        id="emailInput" 
+                        placeholder="Enter your email address" 
+                        class="w-full px-6 py-4 rounded-lg text-gray-800 text-lg focus:outline-none focus:ring-4 focus:ring-purple-300 transition-all"
+                        required
+                    >
+                </div>
+                <button 
+                    type="submit" 
+                    class="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-orange-300 ripple"
+                >
+                    Check Breaches
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Results Section -->
+<section id="resultsSection" class="py-16 hidden">
+    <div class="container mx-auto px-6">
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <p id="progressLabel" class="text-gray-600 text-lg">Loading breached email list...</p>
+            <div class="w-full bg-gray-200 rounded-full h-2 mt-4 max-w-md mx-auto">
+                <div id="progressBar" class="progress-bar bg-purple-600 h-2 rounded-full" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Results Content -->
+        <div id="resultsContent" class="hidden">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center breach-card">
+                    <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-3xl font-bold text-red-600 mb-2 count-up" id="breachCount">0</h3>
+                    <p class="text-gray-600">Total Breaches Found</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center breach-card">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-3xl font-bold text-orange-600 mb-2 count-up" id="accountsCount">0</h3>
+                    <p class="text-gray-600">Accounts Compromised</p>
+                </div>
+                
+                <div class="bg-white rounded-xl shadow-lg p-6 text-center breach-card">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-blue-600 mb-2" id="latestBreach">-</h3>
+                    <p class="text-gray-600">Most Recent Breach</p>
+                </div>
+            </div>
+
+            <!-- Email Status -->
+            <div id="emailStatus" class="text-center mb-12">
+                <div class="inline-flex items-center px-6 py-3 rounded-full text-lg font-semibold">
+                    <span id="statusIcon" class="mr-3"></span>
+                    <span id="statusText"></span>
+                </div>
+            </div>
+
+            <!-- Breach Details -->
+            <div id="breachDetails" class="space-y-6">
+                <!-- Details will be inserted here -->
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Info Section -->
+<section class="py-16 bg-white">
+    <div class="container mx-auto px-6">
+        <div class="text-center mb-12">
+            <h2 class="text-4xl font-bold text-gray-800 mb-4">How it works</h2>
+            <p class="text-xl text-gray-600">We check your email against your local CSV list of breached emails and show likely incident scenarios</p>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div class="text-center aos-init">
+                <div class="w-20 h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                        <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Enter Email</h3>
+                <p class="text-gray-600">Type your email address to check against the CSV list</p>
+            </div>
+            
+            <div class="text-center aos-init">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Load CSV</h3>
+                <p class="text-gray-600">We load breached_email.csv and search for a match</p>
+            </div>
+            
+            <div class="text-center aos-init">
+                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <svg class="w-10 h-10 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold mb-3">Get Results</h3>
+                <p class="text-gray-600">If found, we show 2–3 likely incident scenarios</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="bg-gray-800 text-white py-12">
+    <div class="container mx-auto px-6">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <div class="flex items-center space-x-3 mb-4">
+                    <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                        <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold">SecureCheck</h3>
+                </div>
+                <p class="text-gray-400">Protecting your digital identity by monitoring data breaches worldwide.</p>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Services</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-white transition-colors">Breach Monitoring</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">API Access</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Security Reports</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Company</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li><a href="#" class="hover:text-white transition-colors">About Us</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+                    <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-lg font-semibold mb-4">Contact</h4>
+                <ul class="space-y-2 text-gray-400">
+                    <li>support@securecheck.com</li>
+                    <li>+1 (555) 123-4567</li>
+                    <li>24/7 Support Available</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+            <p>&copy; 2024 SecureCheck. All rights reserved. This is a demo version.</p>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // =========================
+    // CSV BREACH LIST CONFIG
+    // =========================
+    const CSV_URL = 'breached_email.csv';
+
+    const BREACHED_EMAILS = {
+        loaded: false,
+        set: new Set(),
+        loadError: null
+    };
+
+    // =========================
+    // PLEXUS BACKGROUND ANIMATION
+    // =========================
+    function initPlexusBackground() {
+        const canvas = document.getElementById('plexusCanvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+        let width, height, dpi;
+        let points = [];
+        const maxDist = 120; 
+
+        class Point {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.radius = 1.5;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0) this.x = width;
+                if (this.x > width) this.x = 0;
+                if (this.y < 0) this.y = height;
+                if (this.y > height) this.y = 0;
+            }
+        }
+        
+        function initPoints() {
+            points = [];
+            const numPoints = Math.floor((width * height) / 20000); 
+            for (let i = 0; i < numPoints; i++) {
+                points.push(new Point());
+            }
+        }
+
+        function resize() {
+            dpi = window.devicePixelRatio || 1;
+            const style = getComputedStyle(canvas.parentElement);
+            width = parseInt(style.width) * dpi;
+            height = parseInt(style.height) * dpi;
+            canvas.width = width;
+            canvas.height = height;
+            initPoints();
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            points.forEach(p => p.update());
+
+            for (let i = 0; i < points.length; i++) {
+                for (let j = i + 1; j < points.length; j++) {
+                    const p1 = points[i];
+                    const p2 = points[j];
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist < maxDist) {
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${1 - dist / maxDist})`;
+                        ctx.lineWidth = 1 * dpi;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            points.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius * dpi, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.fill();
+            });
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        animate();
+    }
+
+    // =========================
+    // PARTICLES IN HEADER
+    // =========================
+    function initParticles() {
+        const canvas = document.getElementById('headerParticles');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        let w, h, particles;
+
+        function resize() {
+            w = canvas.width = canvas.offsetWidth;
+            h = canvas.height = canvas.offsetHeight;
+            particles = Array.from({ length: Math.floor(w / 18) }, () => ({
+                x: Math.random() * w,
+                y: Math.random() * h,
+                vx: (Math.random() - 0.5) * 0.4,
+                vy: (Math.random() - 0.5) * 0.4,
+                r: Math.random() * 2 + 0.6
+            }));
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, w, h);
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > w) p.vx *= -1;
+                if (p.y < 0 || p.y > h) p.vy *= -1;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            for (let i = 0; i < particles.length; i++) {
+                for (let j = i + 1; j < particles.length; j++) {
+                    const dx = particles[i].x - particles[j].x;
+                    const dy = particles[i].y - particles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 80) {
+                        ctx.globalAlpha = 1 - dist / 80;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[i].x, particles[i].y);
+                        ctx.lineTo(particles[j].x, particles[j].y);
+                        ctx.stroke();
+                        ctx.globalAlpha = 1;
+                    }
+                }
+            }
+            requestAnimationFrame(draw);
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+        draw();
+    }
+
+    // =========================
+    // TYPEWRITER EFFECT
+    // =========================
+    function typewriter(el, text, speed = 35) {
+        el.textContent = '';
+        let i = 0;
+        const timer = setInterval(() => {
+            el.textContent += text.charAt(i);
+            i++;
+            if (i >= text.length) clearInterval(timer);
+        }, speed);
+    }
+
+    // =========================
+    // INTERSECTION OBSERVER
+    // =========================
+    function initAOS() {
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('aos-animate');
+                    obs.unobserve(e.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        document.querySelectorAll('.aos-init, .fade-in-up, .slide-in-left, .breach-card').forEach(el => {
+            obs.observe(el);
+        });
+    }
+
+    // =========================
+    // BUTTON RIPPLE
+    // =========================
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.ripple');
+        if (!btn) return;
+        const circle = document.createElement('span');
+        const diameter = Math.max(btn.clientWidth, btn.clientHeight);
+        const radius = diameter / 2;
+        circle.style.width = circle.style.height = `${diameter}px`;
+        circle.style.left = `${e.clientX - (btn.getBoundingClientRect().left + radius)}px`;
+        circle.style.top = `${e.clientY - (btn.getBoundingClientRect().top + radius)}px`;
+        btn.appendChild(circle);
+        setTimeout(() => circle.remove(), 600);
+    });
+
+    // =========================
+    // MOBILE MENU
+    // =========================
+    function initMobileMenu() {
+        const btn = document.getElementById('mobileMenuBtn');
+        const container = document.getElementById('mobileNavContainer');
+        let open = false;
+        btn.addEventListener('click', () => {
+            open = !open;
+            if (open) {
+                container.classList.remove('hidden');
+                container.classList.add('mobile-menu-enter-active');
+                container.classList.remove('mobile-menu-exit-active');
+            } else {
+                container.classList.add('mobile-menu-exit-active');
+                setTimeout(() => {
+                    container.classList.add('hidden');
+                    container.classList.remove('mobile-menu-enter-active');
+                    container.classList.remove('mobile-menu-exit-active');
+                }, 200);
+            }
+        });
+    }
+
+    // =========================
+    // UTILITIES
+    // =========================
+    const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+    function formatDate(dateString) {
+        const date = new Date(dateString);
+        return isNaN(date.getTime()) ? dateString : date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    function timeAgo(dateString) {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return '';
+        const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
+        const intervals = [
+            { label: 'year', secs: 31536000 },
+            { label: 'month', secs: 2592000 },
+            { label: 'day', secs: 86400 },
+            { label: 'hour', secs: 3600 },
+            { label: 'minute', secs: 60 },
+            { label: 'second', secs: 1 }
+        ];
+        for (const intv of intervals) {
+            const count = Math.floor(seconds / intv.secs);
+            if (count >= 1) return `${count} ${intv.label}${count > 1 ? 's' : ''} ago`;
+        }
+        return 'just now';
+    }
+    function sanitizeHTML(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+    function animateCounter(elementId, targetValue) {
+        const element = document.getElementById(elementId);
+        const duration = 1200;
+        const start = 0;
+        const startTime = performance.now();
+        function updateCounter(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const current = Math.floor(start + (targetValue - start) * progress);
+            if (elementId === 'accountsCount') element.textContent = current.toLocaleString();
+            else element.textContent = current;
+            if (progress < 1) requestAnimationFrame(updateCounter);
+        }
+        requestAnimationFrame(updateCounter);
+    }
+
+    // =========================
+    // CSV PARSING + LOOKUP
+    // =========================
+    function normalizeEmail(email) {
+        return email.trim().toLowerCase();
+    }
+
+    function splitCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') {
+                if (inQuotes && line[i + 1] === '"') {
+                    current += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (ch === ',' && !inQuotes) {
+                result.push(current);
+                current = '';
+            } else {
+                current += ch;
+            }
+        }
+        result.push(current);
+        return result;
+    }
+
+    function parseCSVToEmailSet(csvText) {
+        const set = new Set();
+        const lines = csvText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+        for (let raw of lines) {
+            if (raw == null) continue;
+            let line = raw.trim();
+            if (!line) continue;
+            if (line.charCodeAt(0) === 0xFEFF) line = line.slice(1);
+            if (line.startsWith('#')) continue;
+
+            const cells = splitCSVLine(line);
+            for (let cellRaw of cells) {
+                let cell = cellRaw.trim();
+                if (cell.startsWith('"') && cell.endsWith('"')) {
+                    cell = cell.slice(1, -1);
+                }
+                cell = cell.trim();
+                if (!cell) continue;
+                if (emailRegex.test(cell)) {
+                    set.add(normalizeEmail(cell));
+                }
+            }
+        }
+        return set;
+    }
+
+    async function loadBreachCSV() {
+        try {
+            const res = await fetch(CSV_URL, { cache: 'no-store' });
+            if (!res.ok) throw new Error(`Failed to load CSV: ${res.status} ${res.statusText}`);
+            const text = await res.text();
+            BREACHED_EMAILS.set = parseCSVToEmailSet(text);
+            BREACHED_EMAILS.loaded = true;
+        } catch (err) {
+            console.error('Error loading CSV:', err);
+            BREACHED_EMAILS.loadError = err;
+            BREACHED_EMAILS.loaded = true;
+        }
+    }
+
+    async function ensureCSVLoaded() {
+        if (!BREACHED_EMAILS.loaded) {
+            await loadBreachCSV();
+        }
+    }
+
+    function isEmailBreachedByCSV(email) {
+        return BREACHED_EMAILS.set.has(normalizeEmail(email));
+    }
+
+    // =========================
+    // SCENARIO LIBRARY (12 realistic scenarios)
+    // =========================
+    const SCENARIO_LIBRARY = [
+        {
+            Title: "FriendSpace Social Network",
+            Category: "Social Media",
+            Domain: "friendspace.example",
+            BreachDate: "2018-06-12",
+            PwnCount: 120,
+            DataClasses: ["Email addresses", "Passwords", "Usernames"],
+            IsVerified: true,
+            IsSensitive: false,
+            Description: "User credentials and emails were exposed due to weak password hashing (SHA-1)."
+        },
+        {
+            Title: "ShopKart E‑commerce",
+            Category: "E-commerce",
+            Domain: "shopkart.example",
+            BreachDate: "2020-11-03",
+            PwnCount: 425,
+            DataClasses: ["Email addresses", "Passwords", "Names", "Addresses", "Phone numbers", "Credit card data"],
+            IsVerified: true,
+            IsSensitive: true,
+            Description: "An application vulnerability led to exposure of customer contact info and partial payment data."
+        },
+        {
+            Title: "CloudBox Storage",
+            Category: "Cloud Storage",
+            Domain: "cloudbox.example",
+            BreachDate: "2017-12-05",
+            PwnCount: 154,
+            DataClasses: ["Email addresses", "Passwords", "Password hints", "Security questions and answers"],
+            IsVerified: true,
+            IsSensitive: true,
+            Description: "A third-party SDK compromise allowed attackers to access account metadata and weakly protected credentials."
+        },
+        {
+            Title: "QuickBites Delivery",
+            Category: "Food Delivery",
+            Domain: "quickbites.example",
+            BreachDate: "2021-04-18",
+            PwnCount: 890,
+            DataClasses: ["Email addresses", "Phone numbers", "Names", "Order history", "Location data"],
+            IsVerified: true,
+            IsSensitive: false,
+            Description: "Misconfigured database exposed customer contact info and recent order details."
+        },
+        {
+            Title: "FlyFast Travel",
+            Category: "Travel Booking",
+            Domain: "flyfast.example",
+            BreachDate: "2019-09-27",
+            PwnCount: 230,
+            DataClasses: ["Email addresses", "Passwords", "Names", "Travel details"],
+            IsVerified: true,
+            IsSensitive: true,
+            Description: "Credential stuffing attack uncovered travel profiles and associated contact details."
+        },
+        {
+            Title: "LearnHub Education",
+            Category: "Education Portal",
+            Domain: "learnhub.example",
+            BreachDate: "2022-02-10",
+            PwnCount: 320,
+            DataClasses: ["Email addresses", "Passwords", "Usernames", "IP addresses"],
+            IsVerified: true,
+            IsSensitive: false,
+            Description: "A forum plugin flaw exposed user accounts and login data."
+        },
+        {
+            Title: "GameForge Forum",
+            Category: "Gaming",
+            Domain: "gameforge.example",
+            BreachDate: "2023-07-14",
+            PwnCount: 186,
+            DataClasses: ["Email addresses", "Passwords", "IP addresses", "Usernames"],
+            IsVerified: true,
+            IsSensitive: false,
+            Description: "SQL injection in legacy forum software leaked account credentials and IP logs."
+        },
+        {
+            Title: "MediTrack Patient Portal",
+            Category: "Healthcare",
+            Domain: "meditrack.example",
+            BreachDate: "2016-03-22",
+            PwnCount: 580,
+            DataClasses: ["Email addresses", "Names", "Dates of birth", "Phone numbers"],
+            IsVerified: true,
+            IsSensitive: true,
+            Description: "Compromised admin credentials led to exposure of contact and demographic data."
+        },
+        {
+            Title: "CryptoBay Exchange",
+            Category: "Cryptocurrency",
+            Domain: "cryptobay.example",
+            BreachDate: "2021-12-01",
+            PwnCount: 230,
+            DataClasses: ["Email addresses", "Passwords", "Usernames", "Government IDs"],
+            IsVerified: true,
+            IsSensitive: true,
+            Description: "Spear‑phishing of support staff led to data exfiltration and KYC records exposure."
+        },
+        {
+            Title: "MegaList Aggregator",
+            Category: "Third‑Party List",
+            Domain: "megalist.example",
+            BreachDate: "2019-01-24",
+            PwnCount: 773,
+            DataClasses: ["Email addresses", "Passwords"],
+            IsVerified: false,
+            IsSensitive: false,
+            Description: "Large credential collection compiled from multiple sources and shared publicly."
+        },
+        {
+            Title: "DevBoard Community",
+            Category: "Developer Forum",
+            Domain: "devboard.example",
+            BreachDate: "2022-06-08",
+            PwnCount: 190,
+            DataClasses: ["Email addresses", "Passwords", "Usernames", "IP addresses"],
+            IsVerified: true,
+            IsSensitive: false,
+            Description: "Outdated hashing algorithm allowed attackers to crack a subset of passwords."
+        },
+        {
+            Title: "FitPulse Fitness",
+            Category: "Fitness App",
+            Domain: "fitpulse.example",
+            BreachDate: "2020-08-30",
+            PwnCount: 121,
+            DataClasses: ["Email addresses", "Passwords", "Names", "Location data"],
+            IsVerified: true,
+            IsSensitive: false,
+            Description: "An exposed API key enabled scraping of user profiles and login data."
+        }
+    ];
+
+    function severityFromScenario(s) {
+        let score = 0;
+        if (s.PwnCount >= 1000000) score += 2;
+        if (s.PwnCount >= 50000000) score += 2;
+        if ((s.DataClasses || []).includes('Passwords')) score += 3;
+        if ((s.DataClasses || []).includes('Credit card data')) score += 3;
+        if (s.IsSensitive) score += 2;
+        if (s.IsVerified) score += 1;
+
+        if (score >= 6) return { level: 'HIGH', color: 'red' };
+        if (score >= 3) return { level: 'MEDIUM', color: 'orange' };
+        return { level: 'LOW', color: 'yellow' };
+    }
+
+    function severityStyleMap(color) {
+        switch (color) {
+            case 'red': return { bg100: 'bg-red-100', text600: 'text-red-600', text800: 'text-red-800' };
+            case 'orange': return { bg100: 'bg-orange-100', text600: 'text-orange-600', text800: 'text-orange-800' };
+            case 'yellow': return { bg100: 'bg-yellow-100', text600: 'text-yellow-600', text800: 'text-yellow-800' };
+            default: return { bg100: 'bg-gray-100', text600: 'text-gray-600', text800: 'text-gray-800' };
+        }
+    }
+
+    function pickRandomScenarios(min = 2, max = 3) {
+        const count = Math.floor(Math.random() * (max - min + 1)) + min; // 2 or 3
+        const shuffled = [...SCENARIO_LIBRARY].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, count).map(s => ({ ...s }));
+    }
+
+    // =========================
+    // UI BINDINGS (CSV-based)
+    // =========================
+    document.getElementById('searchForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const email = document.getElementById('emailInput').value.trim();
+        if (!email || !emailRegex.test(email)) {
+            alert('Please enter a valid email address.');
+            return;
+        }
+
+        document.getElementById('resultsSection').classList.remove('hidden');
+        document.getElementById('loadingState').classList.remove('hidden');
+        document.getElementById('resultsContent').classList.add('hidden');
+        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+
+        const progressSteps = [
+            'Loading breached email list...',
+            'Checking email against CSV...',
+            'Selecting incident scenarios...',
+            'Finalizing report...'
+        ];
+        let progress = 0, idx = 0;
+        const progressBar = document.getElementById('progressBar');
+        const progressLabel = document.getElementById('progressLabel');
+        progressLabel.textContent = progressSteps[0];
+
+        const progressInterval = setInterval(() => {
+            progress = Math.min(100, progress + 12 + Math.random() * 18);
+            progressBar.style.width = progress + '%';
+            if (progress >= (idx + 1) * (100 / progressSteps.length) && idx < progressSteps.length - 1) {
+                idx++;
+                progressLabel.textContent = progressSteps[idx];
+            }
+            if (progress >= 100) clearInterval(progressInterval);
+        }, 250);
+
+        await ensureCSVLoaded();
+        const isBreached = isEmailBreachedByCSV(email);
+        const scenarios = isBreached ? pickRandomScenarios(2, 3) : [];
+
+        setTimeout(() => showCSVResults(isBreached, email, scenarios), 400);
+    });
+
+    function showCSVResults(isBreached, email, scenarios) {
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('resultsContent').classList.remove('hidden');
+
+        if (isBreached) {
+            const totalBreaches = scenarios.length;
+            const totalAccounts = scenarios.reduce((sum, s) => sum + (s.PwnCount || 0), 0);
+            const latest = scenarios
+                .filter(s => s.BreachDate)
+                .sort((a, b) => new Date(b.BreachDate) - new Date(a.BreachDate))[0];
+
+            animateCounter('breachCount', totalBreaches);
+            animateCounter('accountsCount', totalAccounts);
+            document.getElementById('latestBreach').textContent = latest
+                ? `${formatDate(latest.BreachDate)} (${timeAgo(latest.BreachDate)})`
+                : 'Unknown';
+        } else {
+            animateCounter('breachCount', 0);
+            animateCounter('accountsCount', 0);
+            document.getElementById('latestBreach').textContent = 'None';
+        }
+
+        const statusDiv = document.getElementById('emailStatus');
+        const badge = statusDiv.firstElementChild;
+        if (isBreached) {
+            badge.className = 'inline-flex items-center px-6 py-3 rounded-full text-lg font-semibold bg-red-100 text-red-800 glow-red';
+            document.getElementById('statusIcon').innerHTML = '⚠️';
+            document.getElementById('statusText').textContent = `Oh no! Found in ${scenarios.length} incident${scenarios.length > 1 ? 's' : ''}`;
+        } else {
+            badge.className = 'inline-flex items-center px-6 py-3 rounded-full text-lg font-semibold bg-green-100 text-green-800 glow-green';
+            document.getElementById('statusIcon').innerHTML = '✅';
+            document.getElementById('statusText').textContent = 'Good news! This email was not found in the breached list.';
+        }
+
+        displayCSVDetails(isBreached, email, scenarios);
+    }
+
+    function displayCSVDetails(isBreached, email, scenarios) {
+        const container = document.getElementById('breachDetails');
+        container.innerHTML = '';
+
+        if (BREACHED_EMAILS.loadError) {
+            const warn = document.createElement('div');
+            warn.className = 'mb-6 p-4 rounded-lg bg-yellow-50 text-yellow-800 border border-yellow-200';
+            warn.innerHTML = `
+                <strong>Warning:</strong> Could not load breached_email.csv. The result below may be inaccurate.
+                <div class="text-sm text-yellow-700 mt-1">Make sure breached_email.csv is in the same folder and that you serve this page via a local web server (not file://).</div>
+            `;
+            container.appendChild(warn);
+        }
+
+        if (!isBreached) {
+            container.innerHTML += `
+                <div class="text-center py-12">
+                    <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-12 h-12 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <h3 class="text-2xl font-bold text-green-600 mb-4">All Clear!</h3>
+                    <p class="text-gray-600 text-lg">Your email wasn't found in breached_email.csv.</p>
+                </div>`;
+            return;
+        }
+
+        // Summary card
+        const safeEmail = sanitizeHTML(email);
+        const summary = document.createElement('div');
+        summary.className = 'bg-white rounded-xl shadow-lg p-6 breach-card breach-card-grad';
+        summary.innerHTML = `
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                        <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-800">Breached Email Match</h3>
+                        <p class="text-gray-600">Data Source: breached_email.csv</p>
+                    </div>
+                </div>
+                <span class="px-3 py-1 bg-red-100 text-red-800 text-sm font-semibold rounded-full">MULTIPLE INCIDENTS</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-gray-700 mb-1">Email</h4>
+                    <p class="text-md text-gray-700 break-all">${safeEmail}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-gray-700 mb-1">Incidents</h4>
+                    <p class="text-md text-red-600 font-semibold">${scenarios.length} detected scenarios</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-gray-700 mb-1">Status</h4>
+                    <p class="text-md text-gray-700">Listed in CSV</p>
+                </div>
+            </div>
+            <p class="text-gray-600 leading-relaxed">
+                The following cards illustrate common scenarios where your email might have been exposed (e.g., social media, e‑commerce, or third-party lists).
+            </p>
+        `;
+        container.appendChild(summary);
+
+        // Scenario cards
+        scenarios.forEach((s, index) => {
+            const sev = severityFromScenario(s);
+            const st = severityStyleMap(sev.color);
+            const verified = s.IsVerified
+                ? `<span class="verified-badge"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 12l2 2 4-4" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Verified</span>`
+                : `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">Unverified</span>`;
+
+            const dc = (s.DataClasses || [])
+                .map(type => `<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">${sanitizeHTML(type)}</span>`)
+                .join(' ');
+
+            const card = document.createElement('div');
+            card.className = 'bg-white rounded-xl shadow-lg p-6 breach-card slide-in-left breach-card-grad';
+            card.style.animationDelay = `${index * 0.08}s`;
+
+            card.innerHTML = `
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 ${st.bg100} rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 ${st.text600}" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800">${sanitizeHTML(s.Title)}</h3>
+                            <p class="text-gray-600">${sanitizeHTML(s.Category)} · ${sanitizeHTML(s.Domain)}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${verified}
+                        <span class="px-3 py-1 ${st.bg100} ${st.text800} text-sm font-semibold rounded-full">${sev.level}</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-700 mb-1">Affected Accounts</h4>
+                        <p class="text-2xl font-bold ${st.text600}">${(s.PwnCount || 0).toLocaleString()}</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-700 mb-1">Breach Date</h4>
+                        <p class="text-md text-gray-700">
+                            ${s.BreachDate ? `${formatDate(s.BreachDate)} · <span class="text-gray-500">${timeAgo(s.BreachDate)}</span>` : 'Unknown'}
+                        </p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-semibold text-gray-700 mb-1">Compromised Data</h4>
+                        <div class="flex flex-wrap gap-2">${dc}</div>
+                    </div>
+                </div>
+
+                <p class="text-gray-600 leading-relaxed">${sanitizeHTML(s.Description)}</p>
+            `;
+
+            container.appendChild(card);
+        });
+
+        initAOS();
+    }
+
+    // Initial UI polish
+    document.addEventListener('DOMContentLoaded', function() {
+        initParticles();
+        initAOS();
+        const el = document.getElementById('mainTitle');
+        typewriter(el, "Check if your email has been compromised");
+
+        const submitButton = document.querySelector('button[type="submit"]');
+        submitButton.addEventListener('mouseenter', () => submitButton.classList.add('bounce-animation'));
+        submitButton.addEventListener('animationend', () => submitButton.classList.remove('bounce-animation'));
+
+        initMobileMenu();
+        initPlexusBackground();
+
+        // Preload the CSV in the background
+        loadBreachCSV();
+    });
+</script>
+
+<!-- Cloudflare challenge (optional; can be removed if not needed) -->
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'98d73c1ff5008a24',t:'MTc2MDI3ODc5NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+</body> 
+</html>

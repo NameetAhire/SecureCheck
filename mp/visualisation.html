@@ -1,0 +1,646 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>SecureCheck - Breach Visualizations</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root { --primary-1:#667eea; --primary-2:#764ba2; --accent:#ff7e5f; }
+body{box-sizing:border-box}
+
+/* Animations */
+@keyframes fadeInUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes slideInLeft { from{opacity:0;transform:translateX(-50px)} to{opacity:1;transform:translateX(0)} }
+@keyframes gradientShift { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+@keyframes spin { 0%{transform:rotate(0)} 100%{transform:rotate(360deg)} }
+@keyframes countUp { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+.gradient-bg{
+  background: linear-gradient(135deg, var(--primary-1) 0%, var(--primary-2) 100%);
+  background-size:200% 200%; animation:gradientShift 12s ease infinite;
+}
+.glass-effect{backdrop-filter:blur(10px);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.2)}
+.fade-in-up{animation:fadeInUp .6s ease-out}
+.slide-in-left{animation:slideInLeft .6s ease-out}
+.count-up{animation:countUp .8s ease-out}
+
+/* Header particles + plexus */
+header #headerParticles{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.35;z-index:0}
+#plexusCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.4}
+@media (prefers-reduced-motion: reduce){#plexusCanvas,#headerParticles{display:none}}
+
+/* Chart containers */
+.chart-container {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  transition: transform 0.3s ease;
+}
+.chart-container:hover {
+  transform: translateY(-5px);
+}
+</style>
+</head>
+<body class="min-h-full bg-gray-50">
+<header class="gradient-bg text-white shadow-lg relative">
+  <canvas id="headerParticles"></canvas>
+  <div class="container mx-auto px-6 py-4 relative z-10">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+          <svg class="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+        </div>
+        <h1 class="text-2xl font-bold">SecureCheck</h1>
+      </div>
+      <nav id="primaryNav" class="hidden md:flex space-x-6">
+        <a href="/" class="hover:text-purple-200 transition-colors">Home</a>
+        <a href="about" class="hover:text-purple-200 transition-colors">About</a>
+        <a href="api" class="hover:text-purple-200 transition-colors">API</a>
+        <a href="contact" class="hover:text-purple-200 transition-colors">Contact</a>
+        <a href="visualization" aria-current="page" class="text-white font-semibold border-b-2 border-white/70">Visualizations</a>
+        
+      </nav>
+      <button id="mobileMenuBtn" class="md:hidden ml-4 p-2 rounded-lg glass-effect border border-white/20 focus:outline-none hover:bg-white/10 transition-all" aria-label="Toggle navigation">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/></svg>
+      </button>
+    </div>
+    <div id="mobileNavContainer" class="md:hidden hidden mt-3 glass-effect rounded-lg overflow-hidden">
+      <div class="flex flex-col">
+        <a href="/" class="px-4 py-3 hover:bg-white/10 transition-colors">Home</a>
+        <a href="about" class="px-4 py-3 hover:bg-white/10 transition-colors">About</a>
+        <a href="api" class="px-4 py-3 hover:bg-white/10 transition-colors">API</a>
+        <a href="visualization" class="px-4 py-3 hover:bg-white/10 transition-colors">Visualizations</a>
+        <a href="contact" class="px-4 py-3 hover:bg-white/10 transition-colors">Contact</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="relative gradient-bg text-white overflow-hidden">
+  <canvas id="plexusCanvas" aria-hidden="true"></canvas>
+  <div class="container mx-auto px-6 py-20 relative z-10 text-center">
+    <h2 class="text-5xl font-bold mb-4 fade-in-up">Breach Data Visualizations</h2>
+    <p class="text-xl opacity-90 fade-in-up">Interactive charts showing affected accounts across different breach scenarios</p>
+  </div>
+</section>
+
+<section class="py-16">
+  <div class="container mx-auto px-6">
+    
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+      <div class="bg-white rounded-2xl shadow-lg p-6 text-center fade-in-up">
+        <div class="text-3xl font-extrabold text-purple-600 count-up" id="totalBreaches">12</div>
+        <div class="text-gray-600 mt-1">Total Breach Scenarios</div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-lg p-6 text-center fade-in-up" style="animation-delay:.1s">
+        <div class="text-3xl font-extrabold text-orange-600 count-up" id="totalAccounts">4,319</div>
+        <div class="text-gray-600 mt-1">Total Affected Accounts</div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-lg p-6 text-center fade-in-up" style="animation-delay:.2s">
+        <div class="text-3xl font-extrabold text-blue-600 count-up" id="avgAccounts">360</div>
+        <div class="text-gray-600 mt-1">Average Per Breach</div>
+      </div>
+      <div class="bg-white rounded-2xl shadow-lg p-6 text-center fade-in-up" style="animation-delay:.3s">
+        <div class="text-3xl font-extrabold text-green-600 count-up" id="verifiedCount">10</div>
+        <div class="text-gray-600 mt-1">Verified Incidents</div>
+      </div>
+    </div>
+
+    <!-- Bar Chart - Accounts by Service -->
+    <div class="chart-container fade-in-up">
+      <h3 class="text-2xl font-bold mb-6 text-gray-800">Accounts Affected by Service Type</h3>
+      <div class="h-96">
+        <canvas id="accountsByServiceChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Pie Chart - Distribution by Category -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="chart-container fade-in-up" style="animation-delay:.1s">
+        <h3 class="text-2xl font-bold mb-6 text-gray-800">Breach Distribution by Category</h3>
+        <div class="h-80">
+          <canvas id="categoryDistributionChart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-container fade-in-up" style="animation-delay:.2s">
+        <h3 class="text-2xl font-bold mb-6 text-gray-800">Data Sensitivity Analysis</h3>
+        <div class="h-80">
+          <canvas id="sensitivityChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Timeline Chart -->
+    <div class="chart-container fade-in-up" style="animation-delay:.3s">
+      <h3 class="text-2xl font-bold mb-6 text-gray-800">Breach Timeline (2016-2023)</h3>
+      <div class="h-96">
+        <canvas id="timelineChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Data Classes Breakdown -->
+    <div class="chart-container fade-in-up" style="animation-delay:.4s">
+      <h3 class="text-2xl font-bold mb-6 text-gray-800">Compromised Data Types</h3>
+      <div class="h-96">
+        <canvas id="dataClassesChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Detailed Table -->
+    <div class="chart-container fade-in-up" style="animation-delay:.5s">
+      <h3 class="text-2xl font-bold mb-6 text-gray-800">Detailed Breach Information</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full table-auto border-collapse">
+          <thead>
+            <tr class="bg-gray-50">
+              <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">Service</th>
+              <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">Category</th>
+              <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">Affected Accounts</th>
+              <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">Date</th>
+              <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">Verified</th>
+              <th class="border border-gray-200 px-4 py-3 text-left font-semibold text-gray-700">Sensitive</th>
+            </tr>
+          </thead>
+          <tbody id="breachTableBody">
+            <!-- Table rows will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<footer class="bg-gray-800 text-white py-12">
+  <div class="container mx-auto px-6">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div>
+        <div class="flex items-center space-x-3 mb-4">
+          <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/></svg>
+          </div>
+          <h3 class="text-xl font-bold">SecureCheck</h3>
+        </div>
+        <p class="text-gray-400">Protecting your digital identity by monitoring data breaches worldwide.</p>
+      </div>
+      <div>
+        <h4 class="text-lg font-semibold mb-4">Services</h4>
+        <ul class="space-y-2 text-gray-400">
+          <li><a href="#" class="hover:text-white transition-colors">Breach Monitoring</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">API Access</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Security Reports</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-lg font-semibold mb-4">Company</h4>
+        <ul class="space-y-2 text-gray-400">
+          <li><a href="about.html" class="hover:text-white transition-colors">About Us</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
+          <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-lg font-semibold mb-4">Contact</h4>
+        <ul class="space-y-2 text-gray-400">
+          <li><a href="mailto:support@securecheck.com" class="hover:text-white">support@securecheck.com</a></li>
+          <li><a href="tel:+15551234567" class="hover:text-white">+1 (555) 123-4567</a></li>
+          <li>24/7 Support Available</li>
+        </ul>
+      </div>
+    </div>
+    <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+      <p>&copy; 2024 SecureCheck. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Breach data from your scenario library
+const SCENARIO_LIBRARY = [
+  {
+    Title: "FriendSpace Social Network",
+    Category: "Social Media",
+    Domain: "friendspace.example",
+    BreachDate: "2018-06-12",
+    PwnCount: 120,
+    DataClasses: ["Email addresses", "Passwords", "Usernames"],
+    IsVerified: true,
+    IsSensitive: false,
+    Description: "User credentials and emails were exposed due to weak password hashing (SHA-1)."
+  },
+  {
+    Title: "ShopKart E‑commerce",
+    Category: "E-commerce",
+    Domain: "shopkart.example",
+    BreachDate: "2020-11-03",
+    PwnCount: 425,
+    DataClasses: ["Email addresses", "Passwords", "Names", "Addresses", "Phone numbers", "Credit card data"],
+    IsVerified: true,
+    IsSensitive: true,
+    Description: "An application vulnerability led to exposure of customer contact info and partial payment data."
+  },
+  {
+    Title: "CloudBox Storage",
+    Category: "Cloud Storage",
+    Domain: "cloudbox.example",
+    BreachDate: "2017-12-05",
+    PwnCount: 154,
+    DataClasses: ["Email addresses", "Passwords", "Password hints", "Security questions and answers"],
+    IsVerified: true,
+    IsSensitive: true,
+    Description: "A third-party SDK compromise allowed attackers to access account metadata and weakly protected credentials."
+  },
+  {
+    Title: "QuickBites Delivery",
+    Category: "Food Delivery",
+    Domain: "quickbites.example",
+    BreachDate: "2021-04-18",
+    PwnCount: 890,
+    DataClasses: ["Email addresses", "Phone numbers", "Names", "Order history", "Location data"],
+    IsVerified: true,
+    IsSensitive: false,
+    Description: "Misconfigured database exposed customer contact info and recent order details."
+  },
+  {
+    Title: "FlyFast Travel",
+    Category: "Travel Booking",
+    Domain: "flyfast.example",
+    BreachDate: "2019-09-27",
+    PwnCount: 230,
+    DataClasses: ["Email addresses", "Passwords", "Names", "Travel details"],
+    IsVerified: true,
+    IsSensitive: true,
+    Description: "Credential stuffing attack uncovered travel profiles and associated contact details."
+  },
+  {
+    Title: "LearnHub Education",
+    Category: "Education Portal",
+    Domain: "learnhub.example",
+    BreachDate: "2022-02-10",
+    PwnCount: 320,
+    DataClasses: ["Email addresses", "Passwords", "Usernames", "IP addresses"],
+    IsVerified: true,
+    IsSensitive: false,
+    Description: "A forum plugin flaw exposed user accounts and login data."
+  },
+  {
+    Title: "GameForge Forum",
+    Category: "Gaming",
+    Domain: "gameforge.example",
+    BreachDate: "2023-07-14",
+    PwnCount: 186,
+    DataClasses: ["Email addresses", "Passwords", "IP addresses", "Usernames"],
+    IsVerified: true,
+    IsSensitive: false,
+    Description: "SQL injection in legacy forum software leaked account credentials and IP logs."
+  },
+  {
+    Title: "MediTrack Patient Portal",
+    Category: "Healthcare",
+    Domain: "meditrack.example",
+    BreachDate: "2016-03-22",
+    PwnCount: 580,
+    DataClasses: ["Email addresses", "Names", "Dates of birth", "Phone numbers"],
+    IsVerified: true,
+    IsSensitive: true,
+    Description: "Compromised admin credentials led to exposure of contact and demographic data."
+  },
+  {
+    Title: "CryptoBay Exchange",
+    Category: "Cryptocurrency",
+    Domain: "cryptobay.example",
+    BreachDate: "2021-12-01",
+    PwnCount: 230,
+    DataClasses: ["Email addresses", "Passwords", "Usernames", "Government IDs"],
+    IsVerified: true,
+    IsSensitive: true,
+    Description: "Spear‑phishing of support staff led to data exfiltration and KYC records exposure."
+  },
+  {
+    Title: "MegaList Aggregator",
+    Category: "Third‑Party List",
+    Domain: "megalist.example",
+    BreachDate: "2019-01-24",
+    PwnCount: 773,
+    DataClasses: ["Email addresses", "Passwords"],
+    IsVerified: false,
+    IsSensitive: false,
+    Description: "Large credential collection compiled from multiple sources and shared publicly."
+  },
+  {
+    Title: "DevBoard Community",
+    Category: "Developer Forum",
+    Domain: "devboard.example",
+    BreachDate: "2022-06-08",
+    PwnCount: 190,
+    DataClasses: ["Email addresses", "Passwords", "Usernames", "IP addresses"],
+    IsVerified: true,
+    IsSensitive: false,
+    Description: "Outdated hashing algorithm allowed attackers to crack a subset of passwords."
+  },
+  {
+    Title: "FitPulse Fitness",
+    Category: "Fitness App",
+    Domain: "fitpulse.example",
+    BreachDate: "2020-08-30",
+    PwnCount: 121,
+    DataClasses: ["Email addresses", "Passwords", "Names", "Location data"],
+    IsVerified: true,
+    IsSensitive: false,
+    Description: "An exposed API key enabled scraping of user profiles and login data."
+  }
+];
+
+// Initialize all charts
+function initializeCharts() {
+  // Calculate summary statistics
+  const totalAccounts = SCENARIO_LIBRARY.reduce((sum, scenario) => sum + scenario.PwnCount, 0);
+  const avgAccounts = Math.round(totalAccounts / SCENARIO_LIBRARY.length);
+  const verifiedCount = SCENARIO_LIBRARY.filter(s => s.IsVerified).length;
+
+  // Update summary stats
+  document.getElementById('totalBreaches').textContent = SCENARIO_LIBRARY.length;
+  document.getElementById('totalAccounts').textContent = totalAccounts.toLocaleString();
+  document.getElementById('avgAccounts').textContent = avgAccounts.toLocaleString();
+  document.getElementById('verifiedCount').textContent = verifiedCount;
+
+  // 1. Bar Chart - Accounts by Service
+  const serviceCtx = document.getElementById('accountsByServiceChart').getContext('2d');
+  new Chart(serviceCtx, {
+    type: 'bar',
+    data: {
+      labels: SCENARIO_LIBRARY.map(s => s.Title),
+      datasets: [{
+        label: 'Affected Accounts',
+        data: SCENARIO_LIBRARY.map(s => s.PwnCount),
+        backgroundColor: [
+          '#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe',
+          '#00f2fe', '#43e97b', '#38f9d7', '#ffecd2', '#fcb69f',
+          '#a8edea', '#fed6e3'
+        ],
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `Affected Accounts: ${context.parsed.y.toLocaleString()}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Number of Accounts'
+          }
+        },
+        x: {
+          ticks: {
+            maxRotation: 45,
+            minRotation: 45
+          }
+        }
+      }
+    }
+  });
+
+  // 2. Pie Chart - Category Distribution
+  const categoryCounts = {};
+  SCENARIO_LIBRARY.forEach(scenario => {
+    categoryCounts[scenario.Category] = (categoryCounts[scenario.Category] || 0) + 1;
+  });
+
+  const categoryCtx = document.getElementById('categoryDistributionChart').getContext('2d');
+  new Chart(categoryCtx, {
+    type: 'pie',
+    data: {
+      labels: Object.keys(categoryCounts),
+      datasets: [{
+        data: Object.values(categoryCounts),
+        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#43e97b'],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = SCENARIO_LIBRARY.length;
+              const percentage = ((context.parsed / total) * 100).toFixed(1);
+              return `${context.label}: ${context.parsed} (${percentage}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+
+  // 3. Doughnut Chart - Sensitivity Analysis
+  const sensitiveCount = SCENARIO_LIBRARY.filter(s => s.IsSensitive).length;
+  const nonSensitiveCount = SCENARIO_LIBRARY.length - sensitiveCount;
+
+  const sensitivityCtx = document.getElementById('sensitivityChart').getContext('2d');
+  new Chart(sensitivityCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Sensitive Data', 'Non-Sensitive Data'],
+      datasets: [{
+        data: [sensitiveCount, nonSensitiveCount],
+        backgroundColor: ['#f5576c', '#43e97b'],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom'
+        }
+      }
+    }
+  });
+
+  // 4. Line Chart - Timeline
+  const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+  
+  // Group by year
+  const yearlyData = {};
+  SCENARIO_LIBRARY.forEach(scenario => {
+    const year = new Date(scenario.BreachDate).getFullYear();
+    yearlyData[year] = (yearlyData[year] || 0) + scenario.PwnCount;
+  });
+
+  const years = Object.keys(yearlyData).sort();
+  const accountsByYear = years.map(year => yearlyData[year]);
+
+  new Chart(timelineCtx, {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [{
+        label: 'Accounts Compromised',
+        data: accountsByYear,
+        borderColor: '#667eea',
+        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+        borderWidth: 3,
+        fill: true,
+        tension: 0.4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Accounts Compromised'
+          }
+        },
+        x: {
+          title: {
+            display: true,
+            text: 'Year'
+          }
+        }
+      }
+    }
+  });
+
+  // 5. Horizontal Bar Chart - Data Classes
+  const dataClassCounts = {};
+  SCENARIO_LIBRARY.forEach(scenario => {
+    scenario.DataClasses.forEach(dataClass => {
+      dataClassCounts[dataClass] = (dataClassCounts[dataClass] || 0) + 1;
+    });
+  });
+
+  const dataClassesCtx = document.getElementById('dataClassesChart').getContext('2d');
+  new Chart(dataClassesCtx, {
+    type: 'bar',
+    data: {
+      labels: Object.keys(dataClassCounts),
+      datasets: [{
+        label: 'Number of Breaches',
+        data: Object.values(dataClassCounts),
+        backgroundColor: '#764ba2',
+        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: 'Number of Breaches'
+          }
+        }
+      }
+    }
+  });
+
+  // Populate detailed table
+  const tableBody = document.getElementById('breachTableBody');
+  SCENARIO_LIBRARY.forEach(scenario => {
+    const row = document.createElement('tr');
+    row.className = 'hover:bg-gray-50 transition-colors';
+    row.innerHTML = `
+      <td class="border border-gray-200 px-4 py-3 text-gray-700 font-medium">${scenario.Title}</td>
+      <td class="border border-gray-200 px-4 py-3 text-gray-600">${scenario.Category}</td>
+      <td class="border border-gray-200 px-4 py-3 text-gray-600 font-semibold">${scenario.PwnCount.toLocaleString()}</td>
+      <td class="border border-gray-200 px-4 py-3 text-gray-600">${new Date(scenario.BreachDate).toLocaleDateString()}</td>
+      <td class="border border-gray-200 px-4 py-3">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${scenario.IsVerified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}">
+          ${scenario.IsVerified ? 'Verified' : 'Unverified'}
+        </span>
+      </td>
+      <td class="border border-gray-200 px-4 py-3">
+        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold ${scenario.IsSensitive ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}">
+          ${scenario.IsSensitive ? 'Sensitive' : 'Standard'}
+        </span>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+// Initialize particles and plexus background (same as other pages)
+function initParticles(){
+  const canvas=document.getElementById('headerParticles'); if(!canvas) return; 
+  const ctx=canvas.getContext('2d'); let w,h,particles;
+  function resize(){w=canvas.width=canvas.offsetWidth;h=canvas.height=canvas.offsetHeight;particles=Array.from({length:Math.floor(w/18)},()=>({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.4,vy:(Math.random()-.5)*.4,r:Math.random()*2+.6}));}
+  function draw(){ctx.clearRect(0,0,w,h);ctx.fillStyle='rgba(255,255,255,.8)';particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>w)p.vx*=-1;if(p.y<0||p.y>h)p.vy*=-1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fill();});
+    ctx.strokeStyle='rgba(255,255,255,.2)';for(let i=0;i<particles.length;i++){for(let j=i+1;j<particles.length;j++){const dx=particles[i].x-particles[j].x,dy=particles[i].y-particles[j].y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<80){ctx.globalAlpha=1-dist/80;ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.stroke();ctx.globalAlpha=1;}}}requestAnimationFrame(draw);}
+  window.addEventListener('resize',resize);resize();draw();
+}
+
+function initPlexusBackground(){
+  const canvas=document.getElementById('plexusCanvas'); if(!canvas) return; const ctx=canvas.getContext('2d'); let width,height,dpi; let points=[]; const maxDist=120;
+  class Point{constructor(){this.x=Math.random()*width;this.y=Math.random()*height;this.vx=(Math.random()-.5)*.5;this.vy=(Math.random()-.5)*.5;this.radius=1.5} update(){this.x+=this.vx;this.y+=this.vy;if(this.x<0)this.x=width;if(this.x>width)this.x=0;if(this.y<0)this.y=height;if(this.y>height)this.y=0}}
+  function initPoints(){points=[];const numPoints=Math.floor((width*height)/20000);for(let i=0;i<numPoints;i++){points.push(new Point())}}
+  function resize(){dpi=window.devicePixelRatio||1;const style=getComputedStyle(canvas.parentElement);width=parseInt(style.width)*dpi;height=parseInt(style.height)*dpi;canvas.width=width;canvas.height=height;initPoints();}
+  function animate(){ctx.clearRect(0,0,width,height);points.forEach(p=>p.update());for(let i=0;i<points.length;i++){for(let j=i+1;j<points.length;j++){const p1=points[i],p2=points[j];const dx=p1.x-p2.x,dy=p1.y-p2.y,dist=Math.sqrt(dx*dx+dy*dy);if(dist<maxDist){ctx.beginPath();ctx.moveTo(p1.x,p1.y);ctx.lineTo(p2.x,p2.y);ctx.strokeStyle=`rgba(255,255,255,${1-dist/maxDist})`;ctx.lineWidth=1*dpi;ctx.stroke();}}}
+    points.forEach(p=>{ctx.beginPath();ctx.arc(p.x,p.y,p.radius*dpi,0,Math.PI*2);ctx.fillStyle='rgba(255,255,255,.8)';ctx.fill();});requestAnimationFrame(animate);}
+  window.addEventListener('resize',resize);resize();animate();
+}
+
+function initMobileMenu(){ 
+  const btn=document.getElementById('mobileMenuBtn'); 
+  const container=document.getElementById('mobileNavContainer'); 
+  if(!btn||!container) return; 
+  let open=false; 
+  btn.addEventListener('click',()=>{open=!open;container.classList.toggle('hidden',!open);});
+}
+
+// Initialize everything when page loads
+document.addEventListener('DOMContentLoaded',()=>{
+  initParticles();
+  initPlexusBackground();
+  initMobileMenu();
+  initializeCharts();
+});
+</script>
+</body>
+</html>
