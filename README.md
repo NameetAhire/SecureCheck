@@ -70,4 +70,4 @@ Note on CSV Loading: During the initial load, the application fetches the breach
 
 Contribution
 
-This is a group for ISS Subject for Dark Web Monitioring Project and my team members were Anish, Rutuja and Pratik.
+This is a group project for ISS Subject, for Dark Web Monitioring and my team members were Anish, Rutuja and Pratik.
